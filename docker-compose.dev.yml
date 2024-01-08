@@ -1,0 +1,48 @@
+version: '3.8'
+networks:
+  local_network:
+
+services:
+  # PHP/Laravel Backend
+  backend:
+    build: 
+      context: ./backend/_docker/local/
+      args:
+        - user=${USER}
+        - uid=${UID}
+    container_name: admin_panel_php
+    volumes:
+      - ./backend:/var/www/backend
+    depends_on:
+      - db
+      - redis
+    networks:
+      - local_network
+    ports:
+      - "8000:8000"
+
+  
+  db:
+    image: mariadb
+    container_name: db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - local_network
+  
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    networks:
+      - local_network
+
+
+volumes:
+  db_data:
